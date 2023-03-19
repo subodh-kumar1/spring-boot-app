@@ -24,18 +24,18 @@ import org.springframework.stereotype.Repository;
 public interface TaskRepository extends JpaRepository<Task, Long>{
 
     @Query("SELECT t FROM Task t WHERE t.customer = :customer")
-    List<Task> findTasksByCustomer(@Param("customer") Customer customer);
+    public List<Task> findTasksByCustomer(@Param("customer") Customer customer);
     
     @Query("SELECT t FROM Task t WHERE t.expert = :expert")
-    List<Task> findTasksByExpert(@Param("expert") Expert expert);
+    public List<Task> findTasksByExpert(@Param("expert") Expert expert);
     
     @Query("SELECT t FROM Task t WHERE t.customer = :customer AND t.status = :taskStatus")
-    List<Task> findTasksByCustomerAndStatus(@Param("customer") Customer customer, TaskStatus taskStatus);
+    public List<Task> findTasksByCustomerAndStatus(@Param("customer") Customer customer, TaskStatus taskStatus);
     
     @Modifying
     @Query("UPDATE Task t "
             + "SET t.status = :status WHERE t.id = :taskId")
-    void updateTaskStatus(@Param("taskId") Long taskId, 
+    public void updateTaskStatus(@Param("taskId") Long taskId, 
             @Param("status") TaskStatus status);
 
     @Query("SELECT t FROM Task t WHERE t.status = :taskStatus")
@@ -44,5 +44,8 @@ public interface TaskRepository extends JpaRepository<Task, Long>{
     @Query("SELECT t FROM Task t "
             + "WHERE t.status = :taskStatus ORDER BY t.deadline ASC")
     public List<Task> findTopByStatusOrderByDeadlineAsc(TaskStatus taskStatus);
+    
+    @Query("SELECT t FROM Task t WHERE t.expert = :expert AND t.status = :taskStatus")
+    List<Task> findTasksByExpertAndStatus(@Param("expert") Expert expert, TaskStatus taskStatus);
     
 }

@@ -164,7 +164,11 @@ public class AccountingController {
       Task task = foundTask.get();
       task.setStatus(TaskStatus.COMPLETED);
       Task saveTask = taskRepository.save(task);
-      foundTask.get().getExpert().setStatus(ExpertStatus.AVAILABLE);
+      List<Task> uncompletedTasks = taskRepository.findTasksByExpertAndStatus(
+                task.getExpert(), TaskStatus.IN_PROGRESS);
+      if(uncompletedTasks.isEmpty()){
+        task.getExpert().setStatus(ExpertStatus.AVAILABLE);
+      }
       return ResponseEntity.ok(saveTask);
     } else {
       return ResponseEntity.badRequest().body("Invalid task ID.");
