@@ -8,7 +8,6 @@ import com.accountingapp.subodh.constant.TaskStatus;
 import com.accountingapp.subodh.entity.Customer;
 import com.accountingapp.subodh.entity.Expert;
 import com.accountingapp.subodh.entity.Task;
-import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -21,31 +20,31 @@ import org.springframework.stereotype.Repository;
  * @author subodh
  */
 @Repository
-public interface TaskRepository extends JpaRepository<Task, Long>{
+public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    @Query("SELECT t FROM Task t WHERE t.customer = :customer")
-    public List<Task> findTasksByCustomer(@Param("customer") Customer customer);
-    
-    @Query("SELECT t FROM Task t WHERE t.expert = :expert")
-    public List<Task> findTasksByExpert(@Param("expert") Expert expert);
-    
-    @Query("SELECT t FROM Task t WHERE t.customer = :customer AND t.status = :taskStatus")
-    public List<Task> findTasksByCustomerAndStatus(@Param("customer") Customer customer, TaskStatus taskStatus);
-    
-    @Modifying
-    @Query("UPDATE Task t "
-            + "SET t.status = :status WHERE t.id = :taskId")
-    public void updateTaskStatus(@Param("taskId") Long taskId, 
-            @Param("status") TaskStatus status);
+        @Query("SELECT t FROM Task t WHERE t.customer = :customer")
+        public List<Task> findTasksByCustomer(@Param("customer") Customer customer);
 
-    @Query("SELECT t FROM Task t WHERE t.status = :taskStatus")
-    public List<Task> findByStatus(TaskStatus taskStatus);
+        @Query("SELECT t FROM Task t WHERE t.expert = :expert")
+        public List<Task> findTasksByExpert(@Param("expert") Expert expert);
 
-    @Query("SELECT t FROM Task t "
-            + "WHERE t.status = :taskStatus ORDER BY t.deadline ASC")
-    public List<Task> findTopByStatusOrderByDeadlineAsc(TaskStatus taskStatus);
-    
-    @Query("SELECT t FROM Task t WHERE t.expert = :expert AND t.status = :taskStatus")
-    List<Task> findTasksByExpertAndStatus(@Param("expert") Expert expert, TaskStatus taskStatus);
-    
+        @Query("SELECT t FROM Task t WHERE t.customer = :customer AND t.status = :taskStatus")
+        public List<Task> findTasksByCustomerAndStatus(@Param("customer") Customer customer, TaskStatus taskStatus);
+
+        @Modifying
+        @Query("UPDATE Task t "
+                        + "SET t.status = :status WHERE t.id = :taskId")
+        public void updateTaskStatus(@Param("taskId") Long taskId,
+                        @Param("status") TaskStatus status);
+
+        @Query("SELECT t FROM Task t WHERE t.status = :taskStatus")
+        public List<Task> findByStatus(TaskStatus taskStatus);
+
+        @Query("SELECT t FROM Task t "
+                        + "WHERE t.status = :taskStatus ORDER BY t.deadline ASC")
+        public List<Task> findTopByStatusOrderByDeadlineAsc(TaskStatus taskStatus);
+
+        @Query("SELECT t FROM Task t WHERE t.expert = :expert AND t.status = :taskStatus")
+        List<Task> findTasksByExpertAndStatus(@Param("expert") Expert expert, TaskStatus taskStatus);
+
 }
