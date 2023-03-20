@@ -97,7 +97,7 @@ public class AccountingController {
     boolean isCustomerTaskInProgress = taskRepository
         .findTasksByCustomerAndStatus(customer, TaskStatus.IN_PROGRESS)
         .isEmpty();
-    if (isCustomerTaskInProgress) {
+    if (!isCustomerTaskInProgress) {
       return ResponseEntity.badRequest().body("Already Tasks in Progress, can't create new.");
     }
     Task task = new Task();
