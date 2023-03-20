@@ -18,14 +18,14 @@ import org.springframework.stereotype.Repository;
  * @author subodh
  */
 @Repository
-public interface ExpertRepository extends JpaRepository<Expert, Long>{
-    List<Expert> findByStatus(ExpertStatus status);
-    
-    @Query(value = "SELECT e FROM Expert e "
-            + "WHERE e.status = :status "
-            + "AND e.lastTaskEndTime <= :time "
-            + "ORDER BY e.lastTaskEndTime ASC")
-    List<Expert> findAvailableExpertsSortedByAvailability(
-            @Param("status") ExpertStatus status, 
-            @Param("time") LocalDateTime time);
+public interface ExpertRepository extends JpaRepository<Expert, Long> {
+        List<Expert> findByStatus(ExpertStatus status);
+
+        @Query(value = "SELECT e FROM Expert e "
+                        + "WHERE e.status = :status "
+                        + "AND e.lastTaskEndTime <= :time "
+                        + "ORDER BY e.lastTaskEndTime ASC")
+        List<Expert> findAvailableExpertsSortedByAvailability(
+                        @Param("status") ExpertStatus status,
+                        @Param("time") LocalDateTime time);
 }

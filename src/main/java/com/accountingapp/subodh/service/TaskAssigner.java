@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-
 /**
  *
  * @author subodh
@@ -41,24 +40,23 @@ public class TaskAssigner {
         List<Expert> availableExperts = expertRepository
                 .findAvailableExpertsSortedByAvailability(
                         ExpertStatus.AVAILABLE,
-                        LocalDateTime.now()
-                );
+                        LocalDateTime.now());
         for (Expert expert : availableExperts) {
             Task task = getPendingTask();
             if (task == null) {
                 break;
             }
-            if(LocalDateTime.now().plusHours(task.getEstimatedTime()).isAfter(task.getDeadline())){
+            if (LocalDateTime.now().plusHours(task.getEstimatedTime()).isAfter(task.getDeadline())) {
                 task.setStatus(TaskStatus.EXPIRED);
                 taskRepository.save(task);
                 break;
             }
             Customer taskCustomer = task.getCustomer();
             List<Task> customerTasks = taskRepository
-                    .findTasksByCustomerAndStatus(taskCustomer, 
+                    .findTasksByCustomerAndStatus(taskCustomer,
                             TaskStatus.PENDING);
             Long customerEstTime = getEstCustomerTasks(customerTasks);
-            if (expert.getLastTaskEndTime() != null 
+            if (expert.getLastTaskEndTime() != null
                     && expert.getLastTaskEndTime()
                             .plusHours(customerEstTime)
                             .isAfter(LocalDateTime.now()
@@ -71,21 +69,21 @@ public class TaskAssigner {
                         .plusHours(customerEstTime));
                 expert.setStatus(ExpertStatus.BUSY);
                 expertRepository.save(expert);
-                for(Task custTask:customerTasks){
+                for (Task custTask : customerTasks) {
                     custTask.setExpert(expert);
                     custTask.setStatus(TaskStatus.IN_PROGRESS);
-                    
+
                     taskRepository.save(custTask);
-                    
+
                 }
-                
+
             }
         }
     }
-    
-    private Long getEstCustomerTasks(List<Task> tasks){
-        Long est = (long)0;
-        for(Task task: tasks){
+
+    private Long getEstCustomerTasks(List<Task> tasks) {
+        Long est = (long) 0;
+        for (Task task : tasks) {
             est += task.getEstimatedTime();
         }
         return est;
@@ -102,7 +100,7 @@ public class TaskAssigner {
         }
         return null;
     }
-    
+
     @Scheduled(cron = "0 0 0 * * ?") // runs at midnight every day
     public void resetExpertDailyWorkHours() {
         List<Expert> experts = expertRepository.findAll();

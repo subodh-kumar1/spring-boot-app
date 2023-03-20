@@ -33,49 +33,46 @@ import org.springframework.web.bind.annotation.RestController;
  * @author subodh
  */
 @RestController
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = { "*", "https://monumental-figolla-16cd9d.netlify.app" })
 @RequestMapping(value = "/api")
 public class AccountingController {
 
   @Autowired
   private CustomerRepository customerRepository;
-  
+
   @Autowired
   private ExpertRepository expertRepository;
-  
+
   @Autowired
   private TaskRepository taskRepository;
 
-  //---------------------- LOGIN APIs ----------------------------------------
+  // ---------------------- LOGIN APIs ----------------------------------------
   // Endpoint for expert login
   @PostMapping("/expert/login")
-  public ResponseEntity<?> 
-        expertLogin(@RequestBody FetchRequest loginUserRequest) {
+  public ResponseEntity<?> expertLogin(@RequestBody FetchRequest loginUserRequest) {
     Optional<Expert> foundExpert = expertRepository
-            .findById(loginUserRequest.getId());
+        .findById(loginUserRequest.getId());
     if (foundExpert.isPresent())
-        return ResponseEntity.ok(foundExpert.get());
+      return ResponseEntity.ok(foundExpert.get());
     else
-        return ResponseEntity.badRequest().body("LOGIN ERROR.");
+      return ResponseEntity.badRequest().body("LOGIN ERROR.");
   }
-        
+
   // Endpoint for customer login
   @PostMapping("/customer/login")
-  public ResponseEntity<?> 
-        customerLogin(@RequestBody FetchRequest loginUserRequest) {
+  public ResponseEntity<?> customerLogin(@RequestBody FetchRequest loginUserRequest) {
     Optional<Customer> foundCustomer = customerRepository
-            .findById(loginUserRequest.getId());
+        .findById(loginUserRequest.getId());
     if (foundCustomer.isPresent())
-        return ResponseEntity.ok(foundCustomer.get());
+      return ResponseEntity.ok(foundCustomer.get());
     else
-        return ResponseEntity.badRequest().body("LOGIN ERROR.");
+      return ResponseEntity.badRequest().body("LOGIN ERROR.");
   }
-  
-  //---------------------- CUSTOMER APIs ---------------------------------------
+
+  // ---------------------- CUSTOMER APIs ---------------------------------------
   // Endpoint for customer create
   @PostMapping("/customer/create")
-  public ResponseEntity<?> 
-        createCustomer(@RequestBody CreateUserRequest user) {
+  public ResponseEntity<?> createCustomer(@RequestBody CreateUserRequest user) {
     Customer customer = new Customer();
     customer.setEmail(user.getEmail());
     customer.setName(user.getName());
@@ -86,21 +83,23 @@ public class AccountingController {
   // Endpoint for customer to raise a task request
   @PostMapping("/customer/task/create")
   public ResponseEntity<?> createTask(@RequestBody CreateTaskRequest taskRequest) {
-    
-    
+
     Customer customer = customerRepository.findById(taskRequest.getCustomerId()).get();
     List<Task> customerPendingTasks = taskRepository
-            .findTasksByCustomerAndStatus(customer, TaskStatus.PENDING);
+        .findTasksByCustomerAndStatus(customer, TaskStatus.PENDING);
     Long sum = taskRequest.getEstimatedTime();
-    for(Task t: customerPendingTasks){
-        sum += t.getEstimatedTime();
+    for (Task t : customerPendingTasks) {
+      sum += t.getEstimatedTime();
     }
-    if(sum >= 8) {
-        return ResponseEntity.badRequest().body("DAILY LIMIT TASK EXCEEDED.");
+    if (sum >= 8) {
+      return ResponseEntity.badRequest().body("DAILY LIMIT TASK EXCEEDED.");
     }
     boolean isCustomerTaskInProgress = taskRepository
-            .findTasksByCustomerAndStatus(customer, TaskStatus.IN_PROGRESS)
-            .isEmpty();
+        .findTasksByCustomerAndStatus(customer, TaskStatus.IN_PROGRESS)
+        .isEmpty();
+    if (isCustomerTaskInProgress) {
+      return ResponseEntity.badRequest().body("Already Tasks in Progress, can't create new.");
+    }
     Task task = new Task();
     task.setStatus(TaskStatus.PENDING);
     task.setCustomer(customer);
@@ -110,15 +109,16 @@ public class AccountingController {
     Task saveTask = taskRepository.save(task);
     return ResponseEntity.ok(saveTask);
   }
-  
+
   // Endpoint for customer to view his tasks
   @PostMapping("/customer/tasks")
   public ResponseEntity<?> viewMyTasks(@RequestBody FetchRequest customerRequest) {
-    try{Customer customer = customerRepository.findById(customerRequest.getId()).get();
-    List<Task> tasks = taskRepository.findTasksByCustomer(customer);
-    return ResponseEntity.ok(tasks);
-    }catch(Exception ex){
-        return ResponseEntity.badRequest().body(ex.toString());
+    try {
+      Customer customer = customerRepository.findById(customerRequest.getId()).get();
+      List<Task> tasks = taskRepository.findTasksByCustomer(customer);
+      return ResponseEntity.ok(tasks);
+    } catch (Exception ex) {
+      return ResponseEntity.badRequest().body(ex.toString());
     }
   }
 
@@ -133,12 +133,11 @@ public class AccountingController {
       return ResponseEntity.badRequest().body(null);
     }
   }
-  
-  //---------------------- EXPERT APIs ----------------------------------------
+
+  // ---------------------- EXPERT APIs ----------------------------------------
   // Endpoint for expert create
   @PostMapping("/expert/create")
-  public ResponseEntity<?> 
-        createExpert(@RequestBody CreateUserRequest user) {
+  public ResponseEntity<?> createExpert(@RequestBody CreateUserRequest user) {
     Expert expert = new Expert();
     expert.setEmail(user.getEmail());
     expert.setName(user.getName());
@@ -148,7 +147,7 @@ public class AccountingController {
     Expert saveExpert = expertRepository.save(expert);
     return ResponseEntity.ok(saveExpert);
   }
-        
+
   // Endpoint for expert to view all tasks
   @GetMapping("/expert/tasks")
   public ResponseEntity<?> getAllTasks() {
@@ -165,8 +164,8 @@ public class AccountingController {
       task.setStatus(TaskStatus.COMPLETED);
       Task saveTask = taskRepository.save(task);
       List<Task> uncompletedTasks = taskRepository.findTasksByExpertAndStatus(
-                task.getExpert(), TaskStatus.IN_PROGRESS);
-      if(uncompletedTasks.isEmpty()){
+          task.getExpert(), TaskStatus.IN_PROGRESS);
+      if (uncompletedTasks.isEmpty()) {
         task.getExpert().setStatus(ExpertStatus.AVAILABLE);
       }
       return ResponseEntity.ok(saveTask);
@@ -186,17 +185,17 @@ public class AccountingController {
   @GetMapping("/expert/tasks/important-tasks")
   public ResponseEntity<?> getMostImportantTask() {
     List<Task> tasks = taskRepository
-            .findTopByStatusOrderByDeadlineAsc(TaskStatus.PENDING);
+        .findTopByStatusOrderByDeadlineAsc(TaskStatus.PENDING);
     return ResponseEntity.ok(tasks);
   }
-  
+
   // Endpoint for expert to view his tasks
   @PostMapping("/expert/assigned-tasks")
   public ResponseEntity<?> viewAssignedTasks(@RequestBody FetchRequest expertRequest) {
     Expert expert = expertRepository.findById(expertRequest.getId()).get();
     List<Task> tasks = taskRepository.findTasksByExpert(expert);
     return ResponseEntity.ok(tasks);
-    
+
   }
 
 }
